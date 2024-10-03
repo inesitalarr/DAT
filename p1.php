@@ -6,7 +6,7 @@ function run_p1($IPpeer,$PORTpeer){
     $GLOBALS['IPpeer'] = $IPpeer;
     $GLOBALS['PORTpeer'] = $PORTpeer;
 
-    try{
+ 
 
         //Se crea un socket y se verifica que funciones correctamente
         $sock = socket_create(AF_INET, SOCK_STREAM, getprotobyname('tcp'));  //se crea el socket
@@ -39,6 +39,7 @@ function run_p1($IPpeer,$PORTpeer){
             $peer_socket = socket_accept($sock);
             
             if(pcntl_fork()==0){
+
                 if($peer_socket == false){
                     $error_code = socket_last_error();
                     $error_msg = socket_strerror($error_code);
@@ -46,9 +47,7 @@ function run_p1($IPpeer,$PORTpeer){
                 }else{
     
                     //Si no hay errores indico que el cliente se ha conectado
-                    $GLOBALS["peer_socket"] = $peer_socket;
-                    echo "Client ".$GLOBALS["IPpeer"].":".$GLOBALS["PORTpeer"]." has connected\n";  //se dice que el cliente se ha conectado
-    
+                    $GLOBALS["peer_socket"] = $peer_socket;    
                     process_peer();    
                 }
                 exit(0);
@@ -57,10 +56,7 @@ function run_p1($IPpeer,$PORTpeer){
                 socket_close($peer_socket); 
             } 
         }
-    }catch(Exception $e){
-
-        echo "Se produjo un error: ". $e -> getMessage();
-    }
+    
 }
 
 function process_peer(){
@@ -81,12 +77,6 @@ function process_request($header) {
     }
     
     $valores_header = explode(" ",$header_string);
-
-    //$valores_header[0] = method
-    //$valores_header[1] = path
-    //$valores_header[2] = protocol_version
-     //$valores_header[4] = Host:
-    //$valores_header[5] = localhost
 
     $protocol = $valores_header[2];
     

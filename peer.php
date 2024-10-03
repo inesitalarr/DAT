@@ -20,57 +20,48 @@ function run_peer($input){
         $input_central = explode(":",$input_bar[0]);
         $input_mine = explode(":",$input_bar[1]);
     
+    
+        if(empty($input_central[0]) || empty($input_central[1]) || empty($input_mine[0]) || empty($input_mine[1])){
+            throw new Exception("Falta algun elemento.");
+
+        }
+
         $IPcentral = $input_central[0];
         $PORTcentral = $input_central[1];
         $IPpeer = $input_mine[0];
         $PORTpeer = $input_mine[1];
     
-        if(empty($IPcentral) || empty($PORTpeer) || empty($IPpeer) || empty($PORTpeer)){
-            echo "Falta algun parametro";
-            die();
-        }
-    
-        //se crea el socket del peer
-        $sock = socket_create(AF_INET, SOCK_STREAM, getprotobyname('tcp'));  //se crea el socket
-        $GLOBALS["socket"] = $sock;
+        
+        echo "Conectado al central server \n";
 
-        $timeout = ['sec' => 500, 'usec' => 0]; // 5 segundos
-        socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, $timeout);
-        socket_set_option($sock, SOL_SOCKET, SO_RCVTIMEO, $timeout);
-        //Nos conectamos al socket donde el servidor está esucchando
-        $socket_conn = socket_connect($sock,$IPcentral,$PORTcentral);
+        $parentPid = posix_getpid();
+        if(pcntl_fork()==0){
 
-        if ($socket_conn === false){
-            $error_code = socket_last_error();
-            $error_msg = socket_strerror($error_code);
-            throw new Exception("Error al crear el socket cliente: [$error_code] $error_msg");
-        }else{
-            echo "Conectado al central server \n";
-    
-            if(pcntl_fork()==0){
-    
-                while(true){
-                    run_p1($IPpeer,$PORTpeer);
-                    
-                }
-
-                exit(0);
+            
+                run_p1($IPpeer,$PORTpeer);
                 
-    
-            }elseif(pcntl_fork() == 0){
-                
-                while(true){
-                    run_uploaded($GLOBALS["socket"],$IPpeer,$PORTpeer,$IPcentral,$PORTcentral);
-                    sleep(10);
-                }
+            exit(0);
+            
 
-                exit(0);
+        }elseif(pcntl_fork() == 0){
+            
+            while(true){
+
+                run_uploaded($IPcentral,$PORTcentral,$IPpeer,$PORTpeer);
+                sleep(30);
             }
-            run_ux($GLOBALS["socket"]);
+
+            exit(0);
+
         }
+        
+        run_ux($IPcentral,$PORTcentral,$IPpeer,$PORTpeer);
+        posix_kill(0 - $parentPid, SIGTERM);  //matamos todos lo hijos del padre
+
 
     }catch(Exception $e){
         echo "Se produjo un error: ". $e -> getMessage();
+        socket_close($GLOBALS["socket"]);
     }
     
 

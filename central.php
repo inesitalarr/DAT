@@ -44,10 +44,9 @@ function run_central_server($server_host,$server_port){
 
             if(pcntl_fork() == 0){
 
-
                 $GLOBALS["client_socket"] = $client_socket;
 
-                if($client_socket == false){
+                if($client_socket === false){
                     $error_code = socket_last_error();
                     $error_msg = socket_strerror($error_code);
                     throw new Exception("Error al crear el socket cliente: [$error_code] $error_msg");
@@ -55,39 +54,33 @@ function run_central_server($server_host,$server_port){
                     echo "El cliente se ha conectado. \n";
                 }
 
-                $header = get_header($client_socket);  //string a la salida
-                process_header_request($header);  //array con la peticion del cliente tipo $array_request[0] = method
+                
+                
+                $header = get_header($GLOBALS["client_socket"]);  // Supongo que esto lee una petición del cliente
+                process_header_request($header);
+                
 
                 exit(0);
             }else{
                 socket_close($client_socket);
             }
 
-            
-
            
         }
 
     }catch(Exception $e){
-
         echo "Se produjo un error: ". $e -> getMessage();
-
     }
 
 
 }
     function process_header_request($header){
 
-        if(strpos($header,"\r\n") !== false){
-            $header_string = str_replace("\r\n"," ",$header);
-        }else{
-            $header_string = str_replace("\n"," ",$header);
+       
+        trim($header);
+        $header_sliced = explode(" ",$header);
     
-        }
-    
-        $header_sliced = explode(" ",$header_string);
-    
-        
+
         if($header_sliced[0] == "PUT"){
 
             putRequest($header);
@@ -109,7 +102,7 @@ function run_central_server($server_host,$server_port){
 
                 if(empty($matchFiles)){
                     $status = "403 Forbidden";
-                    $body = "No hay coincidencias";
+                    $body = "No hay coincidencias.";
                 }else{
                     $status = "200 OK";
                     $body = implode("\n",$matchFiles);
@@ -123,7 +116,7 @@ function run_central_server($server_host,$server_port){
                 $matchingPeers = peersRequest($path);
                 if(empty($matchingPeers)){
                     $status = "403 Forbidden";
-                    $body = "No hay coincidencias";
+                    $body = "El archivo que desea descargar no existe.";
                 }else{
                     $status = "200 OK";
                     $body = implode("\n",$matchingPeers);
@@ -136,7 +129,7 @@ function run_central_server($server_host,$server_port){
                 $filesPeer = filesRequest($path);
                 if(empty($filesPeer)){
                     $status = "403 Forbidden";
-                    $body = "No hay coincidencias";
+                    $body = "No existe este peer en el servidor central.";
                 }else{
                     $status = "200 OK";
                     $body = implode("\n",$filesPeer);
@@ -145,14 +138,15 @@ function run_central_server($server_host,$server_port){
     
     
             }else{
-                throw new Exception("Tipo de peticion no disponible.");
+                throw new Exception("Tipo de peticion GET no disponible.");
             }
     
-    
-            
+
     
         }else{
-            throw new Exception("Tipo de peticion no disponible.");
+            //tendremos un exit o quit
+            exitRequest($header);
+
         }
     
     }
@@ -191,6 +185,7 @@ function putRequest($header){
     $time = time();
 
     $file_json = strval($header_processed["IPpeer"])."_".strval($header_processed["PORTpeer"].".json");
+    
     if(file_exists($file_json) === true){
         $data_json = file_get_contents($file_json);
         $array_json = json_decode($data_json, true);
@@ -348,8 +343,6 @@ function filesRequest($input){
             
         }
 
-    }else{
-        throw new Exception("Peer no existente. \n");
     }
 
     
@@ -357,3 +350,31 @@ function filesRequest($input){
 
 }
 
+    
+function exitRequest($header){
+
+    trim($header);
+    $exit_sliced = explode(" ",$header);
+    $peerName = $exit_sliced[1];
+
+    $dir = getcwd();
+    if(!is_dir($dir)){
+        throw new Exception("Directorio no existente. \n");
+    }
+    
+    $files = scandir($dir);
+    $rootPeer = $dir."/".$peerName.".json";
+
+    
+    if(file_exists($rootPeer)){
+
+        unlink($rootPeer);
+
+    }
+
+    
+    
+
+
+
+}

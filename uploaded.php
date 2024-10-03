@@ -2,10 +2,9 @@
 
 //Este php relaiza las subidas al servder central con un PUT
 require_once "common.php";
-function run_uploaded($sock,$IPpeer,$PORTpeer,$IPcentral,$PORTcentral){  
+function run_uploaded($IPcentral,$PORTcentral,$IPpeer,$PORTpeer){  
 
-    $GLOBALS["IPcentral"] = $IPcentral;
-    $GLOBALS["PORTcentral"] = $PORTcentral;
+    
     //formato de carpeta desde las que se cogen archivos: IPpeer_PORTpeer
     $peerFolder = $IPpeer."_".$PORTpeer;
     $root = getcwd();
@@ -16,15 +15,15 @@ function run_uploaded($sock,$IPpeer,$PORTpeer,$IPcentral,$PORTcentral){
         $files = array_diff($files, array('.', '..'));
     }
     
-    //Vemos si el json existe o no en el servidor
-    
-    send_putRequest($sock,$IPpeer,$PORTpeer,$files);
 
+    socket_connection($IPcentral,$PORTcentral);
+    send_putRequest($IPpeer,$PORTpeer,$files);
+    close_socket();
 
 }
 
 
-function send_putRequest($sock,$IPpeer,$PORTpeer,$files){
+function send_putRequest($IPpeer,$PORTpeer,$files){
 
     $method = "PUT";
     $protocol = "HTTP/1.0";
@@ -39,9 +38,10 @@ function send_putRequest($sock,$IPpeer,$PORTpeer,$files){
     $request .= $body;
     $request .= "\r\n";
    
-    socket_write( $sock,$request,strlen($request));  //aqui el peer se resetea y no sabemos por qué
+    socket_write( $GLOBALS["socket_client"],$request,strlen($request));  //aqui el peer se resetea y no sabemos por qué
    
-    $header = get_header($sock);
+    
+    $header = get_header($GLOBALS["socket_client"]);
     $header_procced = process_header_response($header);
 
     

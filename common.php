@@ -92,3 +92,22 @@ function send_response($status,$body, $content_length = null,$sock) {
     socket_write($sock, $response, strlen($response));
 
 }
+
+function socket_connection($server,$port){
+    $sock = socket_create(AF_INET, SOCK_STREAM, getprotobyname('tcp'));  //se crea el socket
+    $socket_conn = socket_connect($sock,$server,$port);
+    if ($socket_conn === false){
+        throw new Exception("Hay un error en la creacion del socket.");
+
+    }
+     
+    $GLOBALS["socket_client"] = $sock;
+
+}
+
+function close_socket(){
+    socket_close($GLOBALS["socket_client"]);
+}
+
+
+
