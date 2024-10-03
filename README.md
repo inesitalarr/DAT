@@ -1,12 +1,13 @@
 En este README.md se va a explicar el funcionamiento de la segunda práctica de la asignatura.
 
-INICIALIZACIÓN:
+INICIALIZACIÓN: HELLO
 
 Para ejecutar el programa se debe hacer desde main.php por lo que la terminal de ejecución debe estar en el mismo directorio que el archivo main.php. Para ejecutar las diferentes partes de la práctica es de la siguiente manera:
 
     - php main.php --server: Ejecuta el main en modo servidor central, aquel que procesará las peticiones de PUT y GET de los peers. Por defecto se le asigna la IP 127.0.1.1 y puerto 8085. Se pueden cambiar accediendo al php "config_local.php".
 
     - php main.php http://IPcentral:PUERTOcentral/miIP:miPUERTO: Ese es el modelo de línea para introducir en un terminal para conectarnos al servidor central y convertirnos en un peer. Se debe tener en la misma ruta en la que se ejecuta el terminal con esa intrucción, una carpeta que contenga los archivos que se deseen. Esos archivos son los que se subirán al servidor central al mandarle la petición PUT. El nombre de dicha carpeta debe ser formato miIP_miPUERTO. Se incluyen 3 carpetas con diferentes archivos de varias extensiones para actuar como peers.
+
 
     EJEMPLO de funcionamiento:
 
