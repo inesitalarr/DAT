@@ -1,6 +1,6 @@
 En este README.md se va a explicar el funcionamiento de la segunda práctica de la asignatura.
 
-INICIALIZACIÓN: HELLO
+INICIALIZACIÓN: 
 
 Para ejecutar el programa se debe hacer desde main.php por lo que la terminal de ejecución debe estar en el mismo directorio que el archivo main.php. Para ejecutar las diferentes partes de la práctica es de la siguiente manera:
 
